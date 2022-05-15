@@ -13,13 +13,9 @@ import processing.sound.*;
 * Source for the textures (which are currently disabled) - https://opengameart.org/content/8-bit-tetris
 */
 
-String secret = "YOUARENOTONTHERIGHTTRACKTRYLOOKINGATTHEORDERPIECESCOMEOUTIN";
-// String secret = "BRO";
-char currSecret = ' ';
-int secretInd = -1;
 String[] tetrominoes = new String[7];
-int resX = 0;
-int resY = 0;
+int resX = 800;
+int resY = 800;
 int score = 0;
 int secondsSinceStart = 0; // Seconds since pressing spacebar
 float secondCounter = 0;
@@ -32,14 +28,14 @@ boolean initialPause = true;
 PShape boxShape;
 PShape fillShape;
 PShape mapFillerShape;
-// PShape bubbleShape;
+PShape bubbleShape;
 PShape pauseTextBgShape;
 PShape scoreTextBgShape;
 PShape timerTextBgShape;
 PImage[] textures = new PImage[7];
 PImage icon;
 PImage spritesheet;
-// PImage vignette;
+PImage vignette;
 PFont font;
 
 ArrayList<Integer> blocksToRemove = new ArrayList<Integer>();
@@ -50,15 +46,11 @@ SoundFile bgm;
 SoundFile click1;
 SoundFile click2;
 
-
 void settings()
 {
-    resX = displayWidth;
-    resY = displayHeight;
     size(resX, resY, P3D);
     PJOGL.setIcon("icon.png"); // Window icon for the game
 }
-
 
 void setup()
 {        
@@ -107,7 +99,7 @@ void setup()
     boxShape = createShape(BOX, 32, 32, 1);
     fillShape = createShape(BOX, resX, resY, 1);
     mapFillerShape = createShape(BOX, 32, 32, 1);
-    // bubbleShape = createShape(SPHERE, 30);
+    bubbleShape = createShape(SPHERE, 30);
     pauseTextBgShape = createShape(BOX, 200, 200, 1);
     scoreTextBgShape = createShape(BOX, 150, 40, 1);
     timerTextBgShape = createShape(BOX, 150, 40, 1);
@@ -132,14 +124,14 @@ void setup()
     timerTextBgShape.setAmbient(color(0, 0, 0));
     timerTextBgShape.setStroke(color(255, 255, 255));
     
-    font = loadFont("AppleBraille-20.vlw");
+    font = loadFont("Digital-7Mono-18.vlw");
     textFont(font);
     textAlign(CENTER, CENTER);
     
     // Not using the textures from this spritesheet anymore
     // Instead we are giving colors to the tiles based on the current background color
     spritesheet = loadImage("spritesheet.png");
-    // vignette = loadImage("vignette.png"); // For darkening the edges of the screen
+    vignette = loadImage("vignette.png"); // For darkening the edges of the screen
     
     for(int i = 0; i < 7; i++)
     {
@@ -170,11 +162,13 @@ void draw()
     
     drawBackground();
     
+    drawBubbles();
+    
+    drawVignette();
+    
     drawForeground();
     
     drawGhostPiece();
-    
-    drawUpcomingPiece();
     
     drawFallingPiece();
     
@@ -238,7 +232,7 @@ void update()
 // Checks for 10 blocks on each row
 void checkForRows() 
 {
-    Boolean scored = false;
+    
     for(int y = 0; y < mapHeight - 1; y++)
     {
         int piecesInRow = 0;
@@ -252,11 +246,8 @@ void checkForRows()
         
         if(piecesInRow == 10) 
         {
-            scored = true;
             if(!click1.isPlaying()) click1.play();
             score += 100;
-            
-    
             
             for(int i = 1; i < mapWidth - 1; i++) 
             {
@@ -266,13 +257,6 @@ void checkForRows()
             
         }
         
-    }
-    if(scored){
-        if (secretInd < secret.length() - 1)
-        {
-            secretInd += 1;
-            currSecret = secret.charAt(secretInd);
-        }
     }
 
 }
@@ -451,9 +435,9 @@ void placePieceDownInstantly()
 void updateGameSpeed()
 {
     
-    if(secondsSinceStart >= 240) 
+    if(secondsSinceStart >= 248) 
     {
-        pushDownDelay = 200;
+        pushDownDelay = 70;
     }
     else if(secondsSinceStart >= 180)
     {
@@ -492,9 +476,6 @@ int rotate(int rx, int ry, int rState)
 void resetGameState() 
 {
     createMap();
-    resetIndex();
-    currSecret = ' ';
-    secretInd = -1;
     getNewPiece();
     gameOver = false;
     initialPause = true;

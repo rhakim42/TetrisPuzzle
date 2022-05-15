@@ -4,11 +4,15 @@ int[] map = new int[mapWidth * mapHeight];
 int tileWidth = 32;
 int tileHeight = 32;
 
-color[] targetBgColors = 
+color[] targetBgColors =
 { 
-    color(38, 35, 137),
-    color(165, 64, 53),
-    color(110, 0, 69)
+#0000EE,
+#00EE00,
+#660198,
+#EE0000,
+#EEEE00,
+#FF34B3,
+#FFE600
 };
 
 color backgroundColor = targetBgColors[0];
@@ -17,11 +21,6 @@ int targetColorIndex = 0;
 boolean changeTargetNextFrame = false;
 boolean waitedSomeFrames = false;
 int bgChangeFrameCounter = 0;
-
-// "Bubbles" refer to the floating spheres in the background
-PVector[] bubbles = new PVector[20];
-float[] bubbleSpeed = new float[bubbles.length];
-PVector[] bubblesNoise = new PVector[bubbles.length];
 
 // DISCLAIMER: the rendering code is horribly inefficient, enter at your own risk
 
@@ -58,69 +57,6 @@ void createMap()
         
     }
     
-    //Create bubbles
-    for(int i = 0; i < bubbles.length; i++) 
-    {
-        bubbles[i] = new PVector(random(resX, resX + resX), random(resY, resY + resY), random(-100, -40));
-        bubbleSpeed[i] = random(1.0, 4.0);
-        bubblesNoise[i] = new PVector(random(-100, 100), random(-100, 100));
-    }
-    
-}
-
-// Render the darkening effect around the edges of the screen
-void drawVignette()
-{
-    pushMatrix();
-    translate(resX/2, resY/2);
-    fillShape.setTexture(vignette);
-    shape(fillShape);
-    popMatrix();
-}
-
-// Render the bubbles in the background
-void drawBubbles()
-{   
-    
-    if(initialPause || gameOver) return;
-    
-    // "Attempt" to make them look like bubbles by manipulating the light on them
-    pushMatrix();
-    ambientLight(255, 255, 255);
-    lightSpecular(255, 255, 255);
-    directionalLight(0, 0, 0, -1, 0, 0.5);
-    directionalLight(0, 0, 0, 1, 0, 0.5);
-    lightSpecular(255, 0, 0);
-    directionalLight(0, 0, 0, -0.25, 0.5, -0.5);
-    lightSpecular(255, 0, 0);
-    directionalLight(0, 0, 0, 0.5, -0.75, -0.5);
-    lightSpecular(0, 255, 0);
-    directionalLight(0, 0, 0, 1, 0.25, 0.5);
-    directionalLight(0, 0, 0, -1, 0.25, 0.5);
-    bubbleShape.setStroke(0);
-    bubbleShape.setFill(color(red(backgroundColor), green(backgroundColor), blue(backgroundColor), 50));
-    bubbleShape.setShininess(300);
-    bubbleShape.setAmbient(0);
-    bubbleShape.setSpecular(color(255, 255, 255));
-    
-    for(int i = 0; i < bubbles.length; i++) 
-    {
-        pushMatrix();
-        
-        if(bubbles[i].x < -70 || bubbles[i].y < -70)
-        {
-            bubbles[i].set(random(resX, resX + resX), random(resY, resY + resY), random(-100, -40));
-        }
-        
-        translate(bubbles[i].x, bubbles[i].y, bubbles[i].z);
-        shape(bubbleShape);
-        bubbles[i] = bubbles[i].add(-abs(noise(bubblesNoise[i].x) * bubbleSpeed[i]), -abs(noise(bubblesNoise[i].y) * bubbleSpeed[i]));
-        popMatrix();
-        bubblesNoise[i].x += random(0.001, 0.05);
-        bubblesNoise[i].y += random(0.05, 0.1);
-    }
-    
-    popMatrix();
 }
 
 // Just the background color
@@ -253,7 +189,7 @@ void drawPauseScreen()
     translate(resX/2 - ((tileWidth) / 2), resY / 2 - (tileHeight * 3), 50);
     translate(tileWidth/2, tileHeight/2);
     shape(pauseTextBgShape);
-    text("Press space to start", 0, 0, 51);
+    text("Press space \n to start", 0, 0, 51);
     popMatrix();
 }
 
@@ -269,7 +205,7 @@ void drawGameOverScreen()
     text("GAME OVER!", 0, -10, 51);
     fill(255, 255, 255);
     textSize(15);
-    text("Press space to continue", -2, 30, 51);
+    text("Press space \n to continue", -2, 30, 51);
     pop();
     popMatrix();
 }
@@ -289,6 +225,11 @@ void drawInterface()
     text("" + score, 80, 28, 51);
     pop();
     
+    push();
+    textSize(40);
+    text(currSecret, 20, 100, 100);
+    pop();
+    
     popMatrix();
     
     pushMatrix();
@@ -302,6 +243,17 @@ void drawInterface()
     textSize(20);
     textAlign(LEFT);
     text("" + secondsSinceStart, -80, 28, 51);
+    pop();
+    
+    popMatrix();
+    
+    pushMatrix();
+    translate(resX/2 + (tileWidth * 8), 130);
+    translate(tileWidth/2 + 20, tileHeight/2 + 10);
+    push();
+    text("Upcoming Piece", -20, -5, 51);
+    textSize(20);
+    textAlign(LEFT);
     pop();
     
     popMatrix();
